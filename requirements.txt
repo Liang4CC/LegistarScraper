@@ -1,4 +1,6 @@
 flask
+gunicorn # gunicorn is a production-grade WSGI server required 
+         # by Render to run your Flask app (instead of using flask run).
 requests
-beautifulsoup4
-PyMuPDF # fitz
+beautifulsoup4 # to read http code for web scrapping
+PyMuPDF        # fitz - to process PDF
