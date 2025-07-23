@@ -1,6 +1,19 @@
-flask
-gunicorn # gunicorn is a production-grade WSGI server required 
-         # by Render to run your Flask app (instead of using flask run).
-requests
-beautifulsoup4 # to read http code for web scrapping
+flask          # Web framework for HTTP handling and templating
+gunicorn       # gunicorn is a production-grade WSGI server required 
+               # by Render to run your Flask app (instead of using flask run).
+requests       # HTTP client for web scraping
+beautifulsoup4 # HTML parsing and content extraction (for web scrapping)
 PyMuPDF        # fitz - to process PDF
+lxml           # XML/HTML parser backend for BeautifulSoup
+
+# from pyproject.toml of the Replit.com's FlaskDashboard
+beautifulsoup4>=4.13.4
+email-validator>=2.2.0
+flask>=3.1.1
+flask-sqlalchemy>=3.1.1
+gunicorn>=23.0.0
+lxml>=5.4.0
+psycopg2-binary>=2.9.10
+pymupdf>=1.26.3
+requests>=2.32.4
+trafilatura>=2.0.0
