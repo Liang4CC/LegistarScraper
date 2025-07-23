@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Cupertino Meeting Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                <i data-feather="calendar" class="me-3"></i>
+                Cupertino Meeting Scraper
+            </h1>
+            <p class="lead text-muted">
+                Download and manage Cupertino City Council meeting agendas, minutes, and attachments
+            </p>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i data-feather="download" style="width: 48px; height: 48px;" class="text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Scrape Meetings</h5>
+                        <p class="card-text text-muted">
+                            Download meeting agendas, minutes, and all attachments by date or direct URL
+                        </p>
+                        <a href="{{ url_for('scrape') }}" class="btn btn-primary">
+                            <i data-feather="arrow-right" class="me-1"></i>
+                            Start Scraping
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i data-feather="folder" style="width: 48px; height: 48px;" class="text-success"></i>
+                        </div>
+                        <h5 class="card-title">Browse Files</h5>
+                        <p class="card-text text-muted">
+                            View, download, and manage scraped meeting documents and folders
+                        </p>
+                        <a href="{{ url_for('browse') }}" class="btn btn-success">
+                            <i data-feather="arrow-right" class="me-1"></i>
+                            Browse Files
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="help-circle" class="me-2"></i>
+                    How It Works
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <span class="text-white fw-bold">1</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Choose Method</h6>
+                                <small class="text-muted">Select scraping by date or direct meeting URL</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <span class="text-white fw-bold">2</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Configure Options</h6>
+                                <small class="text-muted">Set output folder and select specific agenda items</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <span class="text-white fw-bold">3</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Download & Browse</h6>
+                                <small class="text-muted">Monitor progress and browse downloaded files</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features List -->
+        <div class="mt-4">
+            <h6 class="mb-3">Features:</h6>
+            <ul class="list-unstyled">
+                <li class="mb-2">
+                    <i data-feather="check" class="text-success me-2"></i>
+                    Download meeting agendas, minutes, and attachments
+                </li>
+                <li class="mb-2">
+                    <i data-feather="check" class="text-success me-2"></i>
+                    Search meetings by single date, date range, or use direct URLs
+                </li>
+                <li class="mb-2">
+                    <i data-feather="check" class="text-success me-2"></i>
+                    Select specific agenda items to download
+                </li>
+                <li class="mb-2">
+                    <i data-feather="check" class="text-success me-2"></i>
+                    Real-time progress tracking
+                </li>
+                <li class="mb-2">
+                    <i data-feather="check" class="text-success me-2"></i>
+                    Built-in file browser and document viewer with ZIP download
+                </li>
+                <li class="mb-2">
+                    <i data-feather="check" class="text-success me-2"></i>
+                    Organized folder structure for easy navigation
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

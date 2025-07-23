@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Scraping Progress - Cupertino Meeting Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            <i data-feather="activity" class="me-3" style="width: 32px; height: 32px;"></i>
+            <h2 class="mb-0">Scraping Progress</h2>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Current Status</h5>
+                    <span id="progress-percent" class="badge bg-secondary">0%</span>
+                </div>
+                
+                <div class="progress mb-3" style="height: 20px;">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                
+                <div id="status-message" class="text-muted">
+                    <i data-feather="clock" class="me-2"></i>
+                    Initializing...
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Card (initially hidden) -->
+        <div id="results-card" class="card mb-4" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="check-circle" class="me-2"></i>
+                    Scraping Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="results-content">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Meeting Selection Card (for date-based searches) -->
+        <div id="meeting-selection-card" class="card mb-4" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="list" class="me-2"></i>
+                    Select Meeting
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Multiple meetings found for the selected date. Choose one to continue:</p>
+                <div id="meeting-list">
+                    <!-- Meeting list will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Card (initially hidden) -->
+        <div id="error-card" class="card border-danger mb-4" style="display: none;">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i data-feather="alert-circle" class="me-2"></i>
+                    Error Occurred
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="error-message" class="text-danger">
+                    <!-- Error message will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{{ url_for('scrape') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left" class="me-2"></i>
+                Back to Scraper
+            </a>
+            <a href="#" class="btn btn-success" id="download-zip-btn" style="display: none;" onclick="downloadResultsAsZip()">
+                <i data-feather="download" class="me-2"></i>
+                Download ZIP
+            </a>
+            <a href="{{ url_for('browse') }}" class="btn btn-outline-success" id="browse-btn" style="display: none;">
+                <i data-feather="folder" class="me-2"></i>
+                Browse Files
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i data-feather="home" class="me-2"></i>
+                Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const taskId = '{{ task_id }}';
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const statusMessage = document.getElementById('status-message');
+    const resultsCard = document.getElementById('results-card');
+    const resultsContent = document.getElementById('results-content');
+    const meetingSelectionCard = document.getElementById('meeting-selection-card');
+    const meetingList = document.getElementById('meeting-list');
+    const errorCard = document.getElementById('error-card');
+    const errorMessage = document.getElementById('error-message');
+    const browseBtn = document.getElementById('browse-btn');
+    
+    let pollInterval;
+    
+    function updateProgress(data) {
+        const progress = data.progress || 0;
+        const status = data.status || 'Unknown status';
+        
+        progressBar.style.width = progress + '%';
+        progressPercent.textContent = progress + '%';
+        statusMessage.innerHTML = `<i data-feather="activity" class="me-2"></i>${status}`;
+        
+        // Update progress bar color based on status
+        if (data.error) {
+            progressBar.className = 'progress-bar bg-danger';
+        } else if (data.completed) {
+            progressBar.className = 'progress-bar bg-success';
+            progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
+        } else {
+            progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+        }
+        
+        // Re-initialize feather icons
+        feather.replace();
+    }
+    
+    function showError(errorMsg) {
+        errorMessage.textContent = errorMsg;
+        errorCard.style.display = 'block';
+        clearInterval(pollInterval);
+    }
+    
+    function showResults(result) {
+        let html = '';
+        
+        if (result.title) {
+            html += `<h6><i data-feather="calendar" class="me-2"></i>${result.title}</h6>`;
+            html += `<p class="text-muted mb-3">${result.meeting_dt}</p>`;
+        }
+        
+        if (result.output_folder) {
+            html += `<div class="row mb-3">`;
+            html += `<div class="col-md-6">`;
+            html += `<strong>Output Folder:</strong><br>`;
+            html += `<code>${result.output_folder}</code>`;
+            html += `</div>`;
+            html += `<div class="col-md-6">`;
+            html += `<strong>Downloaded:</strong><br>`;
+            html += `${result.extras_count || 0} extras, ${result.processed_items ? result.processed_items.length : 0} agenda items`;
+            html += `</div>`;
+            html += `</div>`;
+        }
+        
+        if (result.processed_items && result.processed_items.length > 0) {
+            html += `<h6 class="mt-3"><i data-feather="list" class="me-2"></i>Processed Items:</h6>`;
+            html += `<ul class="list-group list-group-flush">`;
+            result.processed_items.forEach(item => {
+                html += `<li class="list-group-item d-flex justify-content-between align-items-start">`;
+                html += `<div>`;
+                html += `<strong>Item ${item.index}:</strong> ${item.subject}`;
+                html += `<br><small class="text-muted">${item.files ? item.files.length : 0} files downloaded</small>`;
+                html += `</div>`;
+                html += `</li>`;
+            });
+            html += `</ul>`;
+        }
+        
+        resultsContent.innerHTML = html;
+        resultsCard.style.display = 'block';
+        browseBtn.style.display = 'inline-block';
+        
+        // Store output folder for ZIP download
+        if (result.output_folder) {
+            window.currentOutputFolder = result.output_folder;
+            document.getElementById('download-zip-btn').style.display = 'inline-block';
+        }
+        
+        // Re-initialize feather icons
+        feather.replace();
+    }
+    
+    function showMeetingSelection(meetings) {
+        let html = '';
+        meetings.forEach((meeting, index) => {
+            const [date, time, url] = meeting;
+            html += `<div class="card mb-2">`;
+            html += `<div class="card-body">`;
+            html += `<div class="d-flex justify-content-between align-items-center">`;
+            html += `<div>`;
+            html += `<h6 class="mb-1">Meeting ${index + 1}</h6>`;
+            html += `<p class="mb-1"><strong>Date:</strong> ${date}</p>`;
+            html += `<p class="mb-0 text-muted"><strong>Time:</strong> ${time}</p>`;
+            html += `</div>`;
+            html += `<button class="btn btn-primary" onclick="selectMeeting(${index + 1})">`;
+            html += `<i data-feather="arrow-right" class="me-1"></i>Select`;
+            html += `</button>`;
+            html += `</div>`;
+            html += `</div>`;
+            html += `</div>`;
+        });
+        
+        meetingList.innerHTML = html;
+        meetingSelectionCard.style.display = 'block';
+        
+        // Re-initialize feather icons
+        feather.replace();
+    }
+    
+    function pollProgress() {
+        fetch(`/api/progress/${taskId}`)
+            .then(response => response.json())
+            .then(data => {
+                updateProgress(data);
+                
+                if (data.error) {
+                    showError(data.error);
+                } else if (data.completed) {
+                    clearInterval(pollInterval);
+                    
+                    if (data.result) {
+                        if (data.result.mode === 'select_meeting') {
+                            showMeetingSelection(data.result.meetings);
+                        } else {
+                            showResults(data.result);
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error polling progress:', error);
+                showError('Failed to get progress updates');
+            });
+    }
+    
+    // Global function for meeting selection
+    window.selectMeeting = function(meetingIndex) {
+        // Redirect back to scraper with meeting index
+        const url = new URL(window.location.origin + '/scrape');
+        url.searchParams.set('meeting_index', meetingIndex);
+        window.location.href = url;
+    };
+    
+    // Global function for ZIP download
+    window.downloadResultsAsZip = function() {
+        if (window.currentOutputFolder) {
+            const url = new URL(window.location.origin + '/download_folder_zip');
+            url.searchParams.set('path', window.currentOutputFolder);
+            window.location.href = url;
+        }
+    };
+    
+    // Start polling
+    pollInterval = setInterval(pollProgress, 1000);
+    
+    // Initial poll
+    pollProgress();
+});
+</script>
+{% endblock %}

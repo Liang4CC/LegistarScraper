@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Scrape Meeting - Cupertino Meeting Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            <i data-feather="download" class="me-3" style="width: 32px; height: 32px;"></i>
+            <h2 class="mb-0">Scrape Meeting Data</h2>
+        </div>
+
+        <form method="POST" class="needs-validation" novalidate>
+            <!-- Scraping Method -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i data-feather="settings" class="me-2"></i>
+                        Scraping Method
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="mode" id="mode_date" value="date" checked>
+                                <label class="form-check-label" for="mode_date">
+                                    <strong>By Date</strong>
+                                    <br>
+                                    <small class="text-muted">Find meetings by specific date</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="mode" id="mode_url" value="url">
+                                <label class="form-check-label" for="mode_url">
+                                    <strong>By URL</strong>
+                                    <br>
+                                    <small class="text-muted">Direct meeting page URL</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Input Section -->
+            <div class="card mb-4" id="date_section">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Date Selection
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Date Range Option -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="date_mode" id="single_date" value="single" checked>
+                                <label class="form-check-label" for="single_date">
+                                    Single Date
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="date_mode" id="date_range" value="range">
+                                <label class="form-check-label" for="date_range">
+                                    Date Range
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Single Date Input -->
+                    <div id="single_date_section">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="date" class="form-label">Meeting Date</label>
+                                <input type="text" class="form-control" id="date" name="date" 
+                                       placeholder="MM/DD/YYYY (e.g., 7/15/2025)"
+                                       pattern="^\d{1,2}/\d{1,2}/\d{4}$">
+                                <div class="form-text">
+                                    Enter date in MM/DD/YYYY format
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="meeting_index" class="form-label">Meeting Index <span class="text-muted">(optional)</span></label>
+                                <input type="number" class="form-control" id="meeting_index" name="meeting_index" 
+                                       min="1" placeholder="1">
+                                <div class="form-text">
+                                    Leave empty to see all meetings for the date first
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Input -->
+                    <div id="date_range_section" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="text" class="form-control" id="start_date" name="start_date" 
+                                       placeholder="MM/DD/YYYY (e.g., 7/1/2025)"
+                                       pattern="^\d{1,2}/\d{1,2}/\d{4}$">
+                                <div class="form-text">
+                                    Enter start date in MM/DD/YYYY format
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="text" class="form-control" id="end_date" name="end_date" 
+                                       placeholder="MM/DD/YYYY (e.g., 7/31/2025)"
+                                       pattern="^\d{1,2}/\d{1,2}/\d{4}$">
+                                <div class="form-text">
+                                    Enter end date in MM/DD/YYYY format
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i data-feather="info" class="me-2"></i>
+                                    <strong>Date Range Mode:</strong> All meetings within the specified date range will be found and listed for selection.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- URL Input Section -->
+            <div class="card mb-4" id="url_section" style="display: none;">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="link" class="me-2"></i>
+                        Meeting URL
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <label for="url" class="form-label">Meeting Page URL</label>
+                    <input type="url" class="form-control" id="url" name="url" 
+                           placeholder="https://cupertino.legistar.com/MeetingDetail.aspx?...">
+                    <div class="form-text">
+                        Enter the full URL of the meeting page from Cupertino Legistar
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="sliders" class="me-2"></i>
+                        Options
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="output_folder" class="form-label">Output Folder</label>
+                            <input type="text" class="form-control" id="output_folder" name="output_folder" 
+                                   value="OUT_MEETING_FOLDER" required>
+                            <div class="form-text">
+                                Folder name where files will be saved
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="selection" class="form-label">Agenda Items <span class="text-muted">(optional)</span></label>
+                            <input type="text" class="form-control" id="selection" name="selection" 
+                                   placeholder="1 3 5-7">
+                            <div class="form-text">
+                                Specific items to download (e.g., "1 3 5-7")
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remove_output" name="remove_output">
+                            <label class="form-check-label" for="remove_output">
+                                Remove existing output folder before scraping
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="split_supplemental" name="split_supplemental" checked>
+                            <label class="form-check-label" for="split_supplemental">
+                                Split supplemental reports into agenda item folders
+                            </label>
+                            <div class="form-text">
+                                Automatically separates supplemental report PDFs into individual agenda item folders
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i data-feather="play" class="me-2"></i>
+                    Start Scraping
+                </button>
+            </div>
+        </form>
+
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">
+                        <strong>Date Format:</strong> Use MM/DD/YYYY format (e.g., 7/15/2025)
+                    </li>
+                    <li class="mb-2">
+                        <strong>Date Range:</strong> Select "Date Range" to find all meetings between two dates (helpful for monthly or quarterly searches)
+                    </li>
+                    <li class="mb-2">
+                        <strong>Meeting Selection:</strong> When searching by date or date range, you may see multiple meetings. Select the one you want to scrape.
+                    </li>
+                    <li class="mb-2">
+                        <strong>Agenda Items:</strong> Leave empty to download all items, or specify numbers like "1 3 5-7" for selective downloading
+                    </li>
+                    <li class="mb-2">
+                        <strong>Progress Tracking:</strong> After starting, you'll be redirected to a progress page to monitor the scraping process
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    const dateModeRadios = document.querySelectorAll('input[name="date_mode"]');
+    const dateSection = document.getElementById('date_section');
+    const urlSection = document.getElementById('url_section');
+    const singleDateSection = document.getElementById('single_date_section');
+    const dateRangeSection = document.getElementById('date_range_section');
+    
+    function toggleSections() {
+        const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+        if (selectedMode === 'date') {
+            dateSection.style.display = 'block';
+            urlSection.style.display = 'none';
+            updateDateRequirements();
+            document.getElementById('url').required = false;
+        } else {
+            dateSection.style.display = 'none';
+            urlSection.style.display = 'block';
+            // Clear date requirements
+            document.getElementById('date').required = false;
+            document.getElementById('start_date').required = false;
+            document.getElementById('end_date').required = false;
+            document.getElementById('url').required = true;
+        }
+    }
+    
+    function toggleDateSections() {
+        const selectedDateMode = document.querySelector('input[name="date_mode"]:checked').value;
+        if (selectedDateMode === 'single') {
+            singleDateSection.style.display = 'block';
+            dateRangeSection.style.display = 'none';
+        } else {
+            singleDateSection.style.display = 'none';
+            dateRangeSection.style.display = 'block';
+        }
+        updateDateRequirements();
+    }
+    
+    function updateDateRequirements() {
+        const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+        const selectedDateMode = document.querySelector('input[name="date_mode"]:checked').value;
+        
+        if (selectedMode === 'date') {
+            if (selectedDateMode === 'single') {
+                document.getElementById('date').required = true;
+                document.getElementById('start_date').required = false;
+                document.getElementById('end_date').required = false;
+            } else {
+                document.getElementById('date').required = false;
+                document.getElementById('start_date').required = true;
+                document.getElementById('end_date').required = true;
+            }
+        }
+    }
+    
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleSections);
+    });
+    
+    dateModeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleDateSections);
+    });
+    
+    // Initial toggles
+    toggleSections();
+    toggleDateSections();
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Files - Cupertino Meeting Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center">
+                <i data-feather="folder" class="me-3" style="width: 32px; height: 32px;"></i>
+                <h2 class="mb-0">Browse Files</h2>
+            </div>
+            <div class="btn-group" role="group">
+                {% if current_path and current_path != '.' %}
+                <a href="{{ url_for('download_folder_zip', path=current_path) }}" class="btn btn-success">
+                    <i data-feather="download" class="me-1"></i>
+                    Download as ZIP
+                </a>
+                {% endif %}
+                <a href="{{ url_for('browse') }}" class="btn btn-outline-secondary">
+                    <i data-feather="refresh-cw" class="me-1"></i>
+                    Refresh
+                </a>
+            </div>
+        </div>
+
+        <!-- Current Path -->
+        <div class="card mb-4">
+            <div class="card-body py-2">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <i data-feather="home" class="me-1"></i>
+                            {% if parent_path %}
+                                <a href="{{ url_for('browse', path=parent_path) }}">{{ parent_path }}</a>
+                            {% else %}
+                                {{ current_path }}
+                            {% endif %}
+                        </li>
+                        {% if parent_path %}
+                        <li class="breadcrumb-item active">
+                            {{ current_path.split('/')[-1] or current_path }}
+                        </li>
+                        {% endif %}
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        {% if error %}
+        <!-- Error Display -->
+        <div class="alert alert-danger" role="alert">
+            <i data-feather="alert-circle" class="me-2"></i>
+            {{ error }}
+        </div>
+        <div class="text-center">
+            <a href="{{ url_for('scrape') }}" class="btn btn-primary">
+                <i data-feather="download" class="me-2"></i>
+                Start Scraping
+            </a>
+        </div>
+        {% else %}
+            {% if not items %}
+            <!-- Empty Folder -->
+            <div class="text-center py-5">
+                <i data-feather="folder" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                <h5 class="text-muted">Folder is Empty</h5>
+                <p class="text-muted">No files or folders found in this directory.</p>
+                <a href="{{ url_for('scrape') }}" class="btn btn-primary">
+                    <i data-feather="download" class="me-2"></i>
+                    Start Scraping
+                </a>
+            </div>
+            {% else %}
+            <!-- File/Folder List -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="mb-0">
+                                <i data-feather="list" class="me-2"></i>
+                                Contents ({{ items|length }} items)
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col" style="width: 40px;"></th>
+                                <th scope="col">Name</th>
+                                <th scope="col" style="width: 120px;">Size</th>
+                                <th scope="col" style="width: 180px;">Modified</th>
+                                <th scope="col" style="width: 120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if parent_path %}
+                            <tr>
+                                <td>
+                                    <i data-feather="arrow-up" class="text-muted"></i>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('browse', path=parent_path) }}" class="text-decoration-none">
+                                        <strong>.. (Parent Directory)</strong>
+                                    </a>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            {% endif %}
+                            
+                            {% for item in items %}
+                            <tr>
+                                <td>
+                                    {% if item.is_dir %}
+                                        <i data-feather="folder" class="text-primary"></i>
+                                    {% else %}
+                                        {% if item.name.endswith('.pdf') %}
+                                            <i data-feather="file-text" class="text-danger"></i>
+                                        {% elif item.name.endswith('.md') %}
+                                            <i data-feather="file-text" class="text-info"></i>
+                                        {% elif item.name.endswith(('.doc', '.docx')) %}
+                                            <i data-feather="file-text" class="text-primary"></i>
+                                        {% elif item.name.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                                            <i data-feather="image" class="text-success"></i>
+                                        {% else %}
+                                            <i data-feather="file" class="text-secondary"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.is_dir %}
+                                        <a href="{{ url_for('browse', path=item.path) }}" class="text-decoration-none">
+                                            <strong>{{ item.name }}</strong>
+                                        </a>
+                                    {% else %}
+                                        <span>{{ item.name }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not item.is_dir %}
+                                        {% if item.size < 1024 %}
+                                            {{ item.size }} B
+                                        {% elif item.size < 1024 * 1024 %}
+                                            {{ "%.1f"|format(item.size / 1024) }} KB
+                                        {% else %}
+                                            {{ "%.1f"|format(item.size / (1024 * 1024)) }} MB
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ item.modified }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {% if item.is_dir %}
+                                            <a href="{{ url_for('download_folder_zip', path=item.path) }}" 
+                                               class="btn btn-outline-success" title="Download folder as ZIP">
+                                                <i data-feather="archive"></i>
+                                            </a>
+                                        {% else %}
+                                            {% if item.name.endswith('.md') %}
+                                                <a href="{{ url_for('view_markdown', path=item.path) }}" 
+                                                   class="btn btn-outline-info" title="View">
+                                                    <i data-feather="eye"></i>
+                                                </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('download', path=item.path) }}" 
+                                               class="btn btn-outline-primary" title="Download">
+                                                <i data-feather="download"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize feather icons
+    feather.replace();
+    
+    // Add tooltips to action buttons
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}
