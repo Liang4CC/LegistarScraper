@@ -1,10 +1,10 @@
-flask          # Web framework for HTTP handling and templating
+#flask          # Web framework for HTTP handling and templating
 gunicorn       # gunicorn is a production-grade WSGI server required 
                # by Render to run your Flask app (instead of using flask run).
-requests       # HTTP client for web scraping
-beautifulsoup4 # HTML parsing and content extraction (for web scrapping)
-PyMuPDF        # fitz - to process PDF
-lxml           # XML/HTML parser backend for BeautifulSoup
+#requests       # HTTP client for web scraping
+#beautifulsoup4 # HTML parsing and content extraction (for web scrapping)
+#PyMuPDF        # fitz - to process PDF
+#lxml           # XML/HTML parser backend for BeautifulSoup
 
 # from pyproject.toml of the Replit.com's FlaskDashboard
 beautifulsoup4>=4.13.4
